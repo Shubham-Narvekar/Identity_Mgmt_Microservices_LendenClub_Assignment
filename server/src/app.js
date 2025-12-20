@@ -26,6 +26,13 @@ const limiter = rateLimit({
 });
 app.use('/api/', limiter);
 
+// Import Routes
+const authRoutes = require('./routes/authRoutes');
+const profileRoutes = require('./routes/profileRoutes');
+
+// Import Error Handlers
+const { errorHandler, notFoundHandler } = require('./middleware/errorHandler');
+
 // Health Check Endpoint
 app.get('/health', (req, res) => {
   res.status(200).json({
@@ -35,16 +42,14 @@ app.get('/health', (req, res) => {
   });
 });
 
-// API Routes (will be added later)
-// app.use('/api/auth', authRoutes);
-// app.use('/api/profile', profileRoutes);
+// API Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/profile', profileRoutes);
 
-// 404 Handler - Catch all unmatched routes
-app.use((req, res) => {
-  res.status(404).json({
-    success: false,
-    message: 'Route not found'
-  });
-});
+// 404 Handler - Catch all unmatched routes (must be after all routes)
+app.use(notFoundHandler);
+
+// Error Handler Middleware (must be last)
+app.use(errorHandler);
 
 module.exports = app;
