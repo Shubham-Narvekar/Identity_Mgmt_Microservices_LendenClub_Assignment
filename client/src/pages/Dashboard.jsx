@@ -166,12 +166,6 @@ const Dashboard = () => {
                   <span className="detail-label">Email Address</span>
                   <span className="detail-value">{displayProfile?.email}</span>
                 </div>
-                <div className="detail-item">
-                  <span className="detail-label">User ID</span>
-                  <span className="detail-value detail-id">
-                    {displayProfile?._id || 'N/A'}
-                  </span>
-                </div>
               </div>
             </div>
 
