@@ -1,17 +1,27 @@
 const crypto = require('crypto');
 
-// Get encryption key from environment variables
-const ENCRYPTION_KEY = process.env.AES_SECRET_KEY;
 const ALGORITHM = 'aes-256-cbc';
 
-// Validate encryption key
-if (!ENCRYPTION_KEY) {
-  throw new Error('AES_SECRET_KEY is not defined in environment variables');
-}
+/**
+ * Get and validate encryption key
+ * Validates lazily (when needed) to allow test setup to configure it first
+ */
+const getEncryptionKey = () => {
+  const ENCRYPTION_KEY = process.env.AES_SECRET_KEY;
 
-if (ENCRYPTION_KEY.length !== 32) {
-  throw new Error('AES_SECRET_KEY must be exactly 32 characters long for AES-256');
-}
+  if (!ENCRYPTION_KEY) {
+    throw new Error('AES_SECRET_KEY is not defined in environment variables');
+  }
+
+  if (ENCRYPTION_KEY.length !== 32) {
+    throw new Error(
+      `AES_SECRET_KEY must be exactly 32 characters long for AES-256. ` +
+      `Current length: ${ENCRYPTION_KEY.length}`
+    );
+  }
+
+  return ENCRYPTION_KEY;
+};
 
 /**
  * Encrypts data using AES-256-CBC
@@ -20,9 +30,13 @@ if (ENCRYPTION_KEY.length !== 32) {
  */
 const encrypt = (text) => {
   try {
-    if (!text) {
+    // Check if text is empty, null, undefined, or whitespace-only
+    if (!text || (typeof text === 'string' && text.trim().length === 0)) {
       throw new Error('Text to encrypt cannot be empty');
     }
+
+    // Get and validate encryption key
+    const ENCRYPTION_KEY = getEncryptionKey();
 
     // Generate a random 16-byte IV (Initialization Vector)
     const iv = crypto.randomBytes(16);
@@ -54,6 +68,9 @@ const decrypt = (encryptedData) => {
     if (!encryptedData) {
       throw new Error('Encrypted data cannot be empty');
     }
+
+    // Get and validate encryption key
+    const ENCRYPTION_KEY = getEncryptionKey();
 
     // Split IV and encrypted data
     const parts = encryptedData.split(':');
